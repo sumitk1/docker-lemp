@@ -1,0 +1,56 @@
+FROM centos:6
+MAINTAINER Sumit Kumar <sumitk.85@gmail.com>
+
+RUN yum -y install epel-release \
+    && yum -y --releasever=2014.03 install php55 \
+    && yum -y install php55-fpm \ 
+    && yum -y install php55-mysqlnd \ 
+    && yum -y install php55-mbstring \
+    && yum -y install php55-soap \
+    && yum -y install php55-gd \
+    && yum -y install php55-mcrypt \
+    && yum -y install php55-gd \
+    && yum -y install php55-ldap \
+    && yum -y install php55-sqlite \
+    && yum -y install php55-pgsql \
+    && yum -y install php55-pear \
+    && yum -y install php55-xcache \
+    && yum -y install php55-xml \
+    && yum -y install php55-xmlrpc \
+    && yum -y install msmtp \ 
+    && yum -y install nginx \
+    && yum -y install mysql-server \
+    && yum -y install tar \
+    && yum -y install wget \
+    && yum -y install python-pip
+
+RUN wget https://pypi.python.org/packages/source/s/supervisor/supervisor-3.1.3.tar.gz -P /tmp/ \
+    && tar -xvf /tmp/supervisor-3.1.3.tar.gz -C /tmp/
+
+RUN python /tmp/supervisor-3.1.3/setup.py install
+#RUN yum -y install supervisor
+RUN pip install supervisor-stdout
+
+COPY ./supervisord.conf /etc/
+
+RUN echo "daemon off;" >> /etc/nginx/nginx.conf
+RUN sed -i -e "s/;daemonize\s*=\s*yes/daemonize = no/g" /etc/php5/fpm/php-fpm.conf
+
+RUN sed -i '/^listen/c \
+    listen = 0.0.0.0:9000' /etc/php-fpm.d/www.conf && \
+    sed -i 's/^listen.allowed_clients/;listen.allowed_clients/' /etc/php-fpm.d/www.conf && \
+    mkdir -p /srv/http && \
+    echo "<?php phpinfo(); ?>" > /srv/http/index.php && \
+    chown -R apache:apache /srv/http && \
+    chown -R apache:apache /var/run/php-fpm
+
+ADD profile /srv/http/
+
+RUN chown -R apache:apache /srv/http
+
+EXPOSE 9000 80
+VOLUME /srv/http
+
+COPY ./start.sh /start/
+
+CMD sh /start/cmdStart.sh
