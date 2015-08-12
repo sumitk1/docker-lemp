@@ -30,13 +30,15 @@ RUN sed -i '/^listen/c \
     listen = 0.0.0.0:9000' /etc/php-fpm.d/www.conf && \
     sed -i 's/^listen.allowed_clients/;listen.allowed_clients/' /etc/php-fpm.d/www.conf && \
     mkdir -p /srv/http && \
-    echo "<?php phpinfo(); ?>" > /srv/http/index.php && \
     chown -R apache:apache /srv/http && \
     chown -R apache:apache /var/run/php-fpm
 
+COPY ./site.conf /etc/nginx/conf.d/
+
 EXPOSE 9000 80
-#VOLUME /srv/http
+VOLUME /srv/http
+COPY ./site/ /srv/http
 
 COPY ./start.sh /start/
-
+LABEL stack=LEMP 
 CMD sh /start/start.sh
