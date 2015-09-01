@@ -1,7 +1,13 @@
 # docker-lemp
 LEMP stack in Docker
 
-To build an image - 
+Download a working image from ```https://hub.docker.com/r/sumitk1/lemp/```
+
+OR
+
+```$ docker pull sumitk1/lemp```
+
+To build an image from scratch - 
 ```bash
   $ git clone https://github.com/sumitk1/docker-lemp.git
   $ cd docker-lemp
